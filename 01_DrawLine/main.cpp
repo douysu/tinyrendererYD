@@ -7,9 +7,9 @@
 #include <vector>
 #include <cmath>
 
-#include "tgaimage.h"
-#include "model.h"
-#include "geometry.h"
+#include "../Utilities/tgaimage.h"
+#include "../Utilities/model.h"
+#include "../Utilities/geometry.h"
 
 
 using namespace std;

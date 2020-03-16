@@ -8,9 +8,9 @@
 #include <cmath>
 #include <algorithm>
 
-#include "tgaimage.h"
-#include "model.h"
-#include "geometry.h"
+#include "../Utilities/geometry.h"
+#include "../Utilities/model.h"
+#include "../Utilities/tgaimage.h"
 
 using namespace std;
 
