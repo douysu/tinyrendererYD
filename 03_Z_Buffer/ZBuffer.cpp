@@ -113,8 +113,6 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor color) {
 	}
 }
 
-
-
 Vec3f world2screen(Vec3f v) 
 {
 	return Vec3f(int((v.x + 1.) * width / 2. + .5), int((v.y + 1.) * height / 2. + .5), v.z);
