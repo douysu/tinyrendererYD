@@ -1,8 +1,8 @@
-ï»¿// @author æ†¨è±†é…’ YinDou https://github.com/douysu
+// @author º©¶¹¾Æ YinDou https://github.com/douysu
 //
-// @description ä¸»æ–‡ä»¶
+// @description Ö÷ÎÄ¼þ
 //
-// @version1 20200312 zBuffer
+// @version1 20200316 »æÖÆÎÆÀí
 
 #include <vector>
 #include <cmath>
@@ -77,7 +77,7 @@ Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P)
 	return Vec3f(-1, 1, 1);
 }
 
-void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor color) {
+void triangle(Vec3f* pts, Vec2f* texts, float* zbuffer, TGAImage& image) {
 	constexpr float maxValue = std::numeric_limits<float>::max();
 	Vec2f bboxmin(maxValue, maxValue);
 	Vec2f bboxmax(-maxValue, -maxValue);
@@ -100,20 +100,27 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor color) {
 			Vec3f bc_screen = barycentric(pts[0], pts[1], pts[2], P);
 			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
 				continue;
-			P.z = 0;
-			for (int i = 0; i < 3; i++)
-				P.z += pts[i][2] * bc_screen[i];
 
+			P.z = 0;
+			Vec2f Ptext(0, 0);
+			for (int i = 0; i < 3; i++)
+			{
+				P.z += pts[i][2] * bc_screen[i];
+				Ptext[0] += texts[i][0] * bc_screen[i];
+				Ptext[1] += texts[i][1] * bc_screen[i];
+			}
+				
 			if (zbuffer[int(P.x + P.y * width)] < P.z)
 			{
-				zbuffer[int(P.x + P.y * width)] = P.z;
+				TGAColor color = model->diffuse(Ptext); // »ñµÃÎÆÀíÑÕÉ«
 				image.set(P.x, P.y, color);
+				zbuffer[int(P.x + P.y * width)] = P.z;
 			}
 		}
 	}
 }
 
-Vec3f world2screen(Vec3f v) 
+Vec3f world2screen(Vec3f v)
 {
 	return Vec3f(int((v.x + 1.) * width / 2. + .5), int((v.y + 1.) * height / 2. + .5), v.z);
 }
@@ -133,22 +140,16 @@ int main(int argc, char** argv)
 
 	for (int i = 0; i < model->nfaces(); i++)
 	{
-		vector<int> face = model->face(i);
-		Vec3f pts[3];
 		Vec3f world_coords[3];
-
-		for (int i = 0; i < 3; i++)
+		Vec3f screen_coords[3];
+		Vec2f texts[3];
+		for (int j = 0; j < 3; j++)
 		{
-			Vec3f v = model->vert(face[i]);
-			pts[i] = world2screen(v);
-			world_coords[i] = v;
+			world_coords[j] = model->vert(i, j);
+			screen_coords[j] = world2screen(world_coords[j]);
+			texts[j] = model->uv(i, j);
 		}
-		// è®¡ç®—æ³•å‘é‡ä¸ªdirectionå…‰
-		Vec3f n = cross((world_coords[2] - world_coords[0]), (world_coords[1] - world_coords[0]));
-		n.normalize();
-		float intensity = n * light_dir;
-		if (intensity > 0)
-			triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+		triangle(screen_coords, texts, zbuffer, image);
 	}
 
 	image.flip_vertically(); // to place the origin in the bottom left corner of the image 
