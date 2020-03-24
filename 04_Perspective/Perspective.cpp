@@ -17,14 +17,56 @@ using namespace std;
 
 Vec3f light_dir(0, 0, -1);
 Vec3f eye(0, 0, 3);
+Vec3f center(0, 0, 0);
+Vec3f up(0, 1, 0);
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
 
 Model* model = NULL;
 
-const int width = 800;
-const int height = 800;
+const int width = 600;
+const int height = 600;
+
+Matrix ModelView;
+Matrix ViewPort;
+Matrix Projection;
+
+void lookat(Vec3f eye, Vec3f center, Vec3f up)
+{
+	Vec3f z = (eye - center).normalize();
+	Vec3f x = cross(up, z).normalize();
+	Vec3f y = cross(z, x).normalize();
+
+	Matrix Minv = Matrix::identity();
+	Matrix Tr = Matrix::identity();
+	for (int i = 0; i < 3; i++)
+	{
+		Minv[0][i] = x[i];
+		Minv[1][i] = y[i];
+		Minv[2][i] = z[i];
+		Tr[i][3] = -center[i];
+	}
+
+	ModelView = Minv * Tr;
+}
+
+void viewport(int x, int y, int w, int h)
+{
+	ViewPort = Matrix::identity();
+	ViewPort[0][3] = x + w / 2.f;
+	ViewPort[1][3] = y + h / 2.f;
+	ViewPort[2][3] = 1.f;
+	ViewPort[0][0] = w / 2.f;
+	ViewPort[1][1] = h / 2.f;
+	ViewPort[2][2] = 1.f;
+}
+
+void projection(float coeff)
+{
+	Projection = Matrix::identity();
+	Projection[3][2] = coeff;
+}
 
 Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P)
 {
@@ -80,7 +122,11 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor color) {
 
 Vec3f world2screen(Vec3f v)
 {
-	return Vec3f(int((v.x + 1.) * width / 2. + .5), int((v.y + 1.) * height / 2. + .5), v.z);
+	Vec4f  gl_vertex = embed<4>(v);
+	gl_vertex = ViewPort * Projection * ModelView * gl_vertex;
+	Vec3f v3 = proj<3>(gl_vertex / gl_vertex[3]);
+
+	return Vec3f(int(v3.x + .5), int(v3.y + .5), v3.z);
 }
 
 int main(int argc, char** argv)
@@ -95,28 +141,32 @@ int main(int argc, char** argv)
 	float* zbuffer = new float[width * height];
 	for (int i = width * height; i--; zbuffer[i] = -numeric_limits<float>::max());
 
+	lookat(eye, center, up);
+	viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
+	projection(-1.f / 3);
+
 	for (int i = 0; i < model->nfaces(); i++)
 	{
 		vector<int> face = model->face(i);
-		Vec3f pts[3];
 		Vec3f world_coords[3];
+		Vec3f screen_coords[3];
 
 		for (int i = 0; i < 3; i++)
 		{
-			Vec3f v = model->vert(face[i]);
-			pts[i] = world2screen(v);
-			world_coords[i] = v;
+			world_coords[i] = model->vert(face[i]);
+			screen_coords[i] = world2screen(world_coords[i]);
 		}
 		// 计算法向量个direction光
-		Vec3f n = cross((world_coords[2] - world_coords[0]), (world_coords[1] - world_coords[0]));
-		n.normalize();
-		float intensity = n * light_dir;
+		Vec3f norm = cross((world_coords[2] - world_coords[0]), (world_coords[1] - world_coords[0]));
+		norm.normalize();
+		float intensity = norm * light_dir;
 		if (intensity > 0)
-			triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+			triangle(screen_coords, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
 	}
 
 	image.flip_vertically(); // to place the origin in the bottom left corner of the image 
 	image.write_tga_file("framebuffer.tga");
+
 	delete model;
 	delete[] zbuffer;
 
