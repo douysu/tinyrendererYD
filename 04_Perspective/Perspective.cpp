@@ -25,8 +25,9 @@ const TGAColor red = TGAColor(255, 0, 0, 255);
 
 Model* model = NULL;
 
-const int width = 600;
-const int height = 600;
+const int width = 800;
+const int height = 800;
+const int depth = 255;
 
 Matrix ModelView;
 Matrix ViewPort;
@@ -40,16 +41,15 @@ void lookat(Vec3f eye, Vec3f center, Vec3f up)
 	Vec3f y = cross(z, x).normalize();
 
 	Matrix Minv = Matrix::identity();
-	Matrix Tr = Matrix::identity();
 	for (int i = 0; i < 3; i++)
 	{
 		Minv[0][i] = x[i];
 		Minv[1][i] = y[i];
 		Minv[2][i] = z[i];
-		Tr[i][3] = -center[i];
+		Minv[i][3] = -center[i];
 	}
 
-	ModelView = Minv * Tr;
+	ModelView = Minv;
 }
 
 void viewport(int x, int y, int w, int h)
@@ -57,10 +57,10 @@ void viewport(int x, int y, int w, int h)
 	ViewPort = Matrix::identity();
 	ViewPort[0][3] = x + w / 2.f;
 	ViewPort[1][3] = y + h / 2.f;
-	ViewPort[2][3] = 1.f;
+	ViewPort[2][3] = depth / 2.f;
 	ViewPort[0][0] = w / 2.f;
 	ViewPort[1][1] = h / 2.f;
-	ViewPort[2][2] = 1.f;
+	ViewPort[2][2] = depth / 2.f;
 }
 
 void projection(float coeff)
@@ -123,11 +123,13 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor color) {
 
 Vec3f world2screen(Vec3f v)
 {
-	Vec4f  gl_vertex = embed<4>(v);
+	/*Vec4f  gl_vertex = embed<4>(v);
 	gl_vertex = ViewPort * Projection * ModelView * gl_vertex;
 	Vec3f v3 = proj<3>(gl_vertex / gl_vertex[3]);
-
-	return Vec3f(int(v3.x + .5), int(v3.y + .5), v3.z);
+	return Vec3f(int(v3.x + .5), int(v3.y + .5), v3.z);*/
+	Vec4f  gl_vertex = embed<4>(v);
+	gl_vertex = ViewPort * Projection * ModelView * gl_vertex;
+	return Vec3f(gl_vertex[0], gl_vertex[1], gl_vertex[2]);
 }
 
 int main(int argc, char** argv)
@@ -145,6 +147,12 @@ int main(int argc, char** argv)
 	lookat(eye, center, up);
 	viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
 	projection(-1.f / 3);
+
+	std::cerr << ModelView << std::endl;
+	std::cerr << Projection << std::endl;
+	std::cerr << ViewPort << std::endl;
+	Matrix z = (ViewPort * Projection * ModelView);
+	std::cerr << z << std::endl;
 
 	for (int i = 0; i < model->nfaces(); i++)
 	{
