@@ -123,13 +123,10 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor color) {
 
 Vec3f world2screen(Vec3f v)
 {
-	/*Vec4f  gl_vertex = embed<4>(v);
-	gl_vertex = ViewPort * Projection * ModelView * gl_vertex;
-	Vec3f v3 = proj<3>(gl_vertex / gl_vertex[3]);
-	return Vec3f(int(v3.x + .5), int(v3.y + .5), v3.z);*/
 	Vec4f  gl_vertex = embed<4>(v);
 	gl_vertex = ViewPort * Projection * ModelView * gl_vertex;
-	return Vec3f(gl_vertex[0], gl_vertex[1], gl_vertex[2]);
+	Vec3f v3 = proj<3>(gl_vertex / gl_vertex[3]);
+	return Vec3f(int(v3.x + .5), int(v3.y + .5), v3.z);
 }
 
 int main(int argc, char** argv)
