@@ -2,7 +2,7 @@
 //
 // @description 主文件
 //
-// @version1 20200330 投影
+// @version1 20200330 摄像机
 
 #include <vector>
 #include <cmath>
@@ -16,7 +16,7 @@
 using namespace std;
 
 Vec3f light_dir(0, 0, -1);
-Vec3f eye(0, 0, 3);
+Vec3f eye(0, 0, 4);
 Vec3f center(0, 0, 0);
 Vec3f up(0, 1, 0);
 
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 
 	lookat(eye, center, up);
 	viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
-	projection(-1.f / 3);
+	projection(-1.f / 4);
 
 	std::cerr << ModelView << std::endl;
 	std::cerr << Projection << std::endl;
