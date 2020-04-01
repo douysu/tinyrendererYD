@@ -22,7 +22,7 @@ template <class t> struct Vec3 {
     Vec3<t>() : x(t()), y(t()), z(t()) { }
     Vec3<t>(t _x, t _y, t _z) : x(_x), y(_y), z(_z) {}
     Vec3<t>(Matrix m);
-    template <class u> Vec3<t>(const Vec3<u>& v);
+    template <class u> Vec3<t>(const Vec3<u> &v);
     Vec3<t> operator ^(const Vec3<t> &v) const { return Vec3<t>(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x); }
     Vec3<t> operator +(const Vec3<t> &v) const { return Vec3<t>(x+v.x, y+v.y, z+v.z); }
     Vec3<t> operator -(const Vec3<t> &v) const { return Vec3<t>(x-v.x, y-v.y, z-v.z); }
@@ -39,18 +39,20 @@ typedef Vec2<int>   Vec2i;
 typedef Vec3<float> Vec3f;
 typedef Vec3<int>   Vec3i;
 
-template int template float Vec3<int>::Vec3(const Vec3<float>& v)
+template <> template <> inline Vec3<int>::Vec3(const Vec3<float>& v)
 {
-    x = int(v.x + .5);
-    y = int(v.y + .5);
-    z = int(v.z + .5);
+    x = (int(v.x + .5));
+    y = (int(v.y + .5));
+    z = (int(v.z + .5));
 }
-template <> template <> Vec3<float>::Vec3(const Vec3<int>& v)
+
+template <> template <> inline Vec3<float>::Vec3(const Vec3<int>& v)
 {
     x = v.x;
     y = v.y;
     z = v.z;
 }
+
 
 template <class t> std::ostream& operator<<(std::ostream& s, Vec2<t>& v) {
     s << "(" << v.x << ", " << v.y << ")\n";
