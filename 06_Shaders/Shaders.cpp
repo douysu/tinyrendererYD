@@ -1,3 +1,13 @@
+/**
+ @author 憨豆酒 YinDou https://github.com/douysu
+
+ @description 主文件
+
+ @version1 20200330 着色器 YinDou
+ @version2 20200404 着色器添加纹理 YinDou
+ @version3 20200404 着色器添加法向量贴图 YinDou
+*/
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -53,24 +63,47 @@ struct GouraudShader : public IShader
 	//}
 
 	// 测试3 - 添加纹理
-	Vec3f varying_intensity;
-	mat<2, 3, float> varing_uv;
+	//Vec3f varying_intensity;
+	//mat<2, 3, float> varing_uv;
+
+	//virtual Vec4f vertex(int iface, int nthvert)
+	//{
+	//	varing_uv.set_col(nthvert, model->uv(iface, nthvert));
+	//	varying_intensity[nthvert] = max(0.f, model->normal(iface, nthvert) * light_dir);
+
+	//	Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+	//	return Viewport * Projection * ModelView * gl_Vertex;
+	//}
+
+	//virtual bool fragment(Vec3f bar, TGAColor& color)
+	//{
+	//	float intensity = varying_intensity * bar; // 当前强度差值
+	//	Vec2f uv = varing_uv * bar; // 当前uv差值
+	//	color = model->diffuse(uv) * intensity;
+
+	//	return false;
+	//}
+
+	// 测试4 - 法向量贴图
+
+	mat<2, 3, float> varying_uv; // same as above
+	mat<4, 4, float> uniform_M; // Projection * ModelView
+	mat<4, 4, float> uniform_MIT; // (Projection * ModelView).invert_transpose
 
 	virtual Vec4f vertex(int iface, int nthvert)
 	{
-		varing_uv.set_col(nthvert, model->uv(iface, nthvert));
-		varying_intensity[nthvert] = max(0.f, model->normal(iface, nthvert) * light_dir);
-
+		varying_uv.set_col(nthvert, model->uv(iface, nthvert));
 		Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
 		return Viewport * Projection * ModelView * gl_Vertex;
 	}
 
 	virtual bool fragment(Vec3f bar, TGAColor& color)
 	{
-		float intensity = varying_intensity * bar; // 当前强度差值
-		Vec2f uv = varing_uv * bar; // 当前uv差值
+		Vec2f uv = varying_uv * bar; // UV差值
+		Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
+		Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
+		float intensity = max(0.f, n * l);
 		color = model->diffuse(uv) * intensity;
-
 		return false;
 	}
 };
@@ -91,6 +124,9 @@ int main(int argc, char** argv)
 	TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
 	GouraudShader shader;
+	shader.uniform_M = Projection * ModelView;
+	shader.uniform_MIT = (Projection * ModelView).invert_transpose();
+
 	for (int i = 0; i < model->nfaces(); i++)
 	{
 		Vec4f screen_coords[3];
