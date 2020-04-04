@@ -85,7 +85,6 @@ struct GouraudShader : public IShader
 	//}
 
 	// 测试4 - 法向量贴图
-
 	mat<2, 3, float> varying_uv; // same as above
 	mat<4, 4, float> uniform_M; // Projection * ModelView
 	mat<4, 4, float> uniform_MIT; // (Projection * ModelView).invert_transpose
@@ -102,8 +101,19 @@ struct GouraudShader : public IShader
 		Vec2f uv = varying_uv * bar; // UV差值
 		Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
 		Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
-		float intensity = max(0.f, n * l);
+		/*float intensity = max(0.f, n * l);
 		color = model->diffuse(uv) * intensity;
+		return false;*/
+
+		// 测试5 - Phong 光照模型
+		Vec3f r = (n * (n * l * 2.f) - l).normalize();
+		float spec = pow(max(r.z, 0.0f), model->specular(uv));
+		float diff = max(0.f, n * l);
+		TGAColor c = model->diffuse(uv);
+		color = c;
+		for (int i = 0; i < 3; i++)
+			color[i] = min<float>(5 + c[i] * (diff + .6 * spec), 255);
+
 		return false;
 	}
 };
