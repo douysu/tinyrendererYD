@@ -99,6 +99,8 @@ struct GouraudShader : public IShader
 	virtual bool fragment(Vec3f bar, TGAColor& color)
 	{
 		Vec2f uv = varying_uv * bar; // UV差值
+
+		// 都变换到z = 0 的平面内，与OpenGL的计算不太相同
 		Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
 		Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
 		/*float intensity = max(0.f, n * l);
