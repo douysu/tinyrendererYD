@@ -34,4 +34,8 @@
 
 <img src="./result/run2.png" width=400>
 
-3、设置需要启动的项目。run，即可生成output.tga。
+3、为需要运行的项目添加引用。
+
+<img src="./result/run3.jpg" width=400>
+
+4、设置需要启动的项目。run，即可生成output.tga。
