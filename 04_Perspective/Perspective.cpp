@@ -31,8 +31,7 @@ const int depth = 255;
 
 Matrix ModelView;
 Matrix ViewPort;
-Matrix 
-ection;
+Matrix Projection;
 
 // ππΩ®LookAtæÿ’Û
 void lookat(Vec3f eye, Vec3f center, Vec3f up)
