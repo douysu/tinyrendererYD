@@ -1,6 +1,6 @@
 # [从零构建光栅渲染器] 1.引言
 
-非常感谢和推荐Sokolov的教程，Sokolov使用500行C++代码实现一个光栅渲染器，地址为<https://github.com/ssloy/tinyrenderer>，本篇博客翻译Sokolov的文章，原文为英文。
+常感谢和推荐Sokolov的教程，Sokolov使用500行C++代码实现一个光栅渲染器。教程学习过程非常平滑，从画点、线和三角形开始教学，在逐步深入三维变换，投影，再到顶点着色器，片段着色器等等。教程地址：<https://github.com/ssloy/tinyrenderer>。Sokolov的教程为英文，我翻译了其文章。
 
 作者：憨豆酒（YinDou），联系我yindou97@163.com，熟悉图形学，图像处理领域，本章的源代码可在此仓库中找到<https://github.com/douysu/person-summary>：如果对您有帮助，还请给一个star，如果大家发现错误以及不合理之处，还希望多多指出。
 
